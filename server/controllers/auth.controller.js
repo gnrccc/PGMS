@@ -150,3 +150,27 @@ export const logout = async (req, res) => {
     });
   }
 };
+
+// Check if user is authenticated
+export const check = async (req, res) => {
+  try {
+    // req.user is set by verifyToken middleware
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    // Return user data without sensitive information
+    const userWithoutPassword = {
+      _id: req.user._id,
+      userName: req.user.userName,
+      role: req.user.role,
+      // Add other user fields you want to send to frontend
+    };
+
+    res.status(200).json({ user: userWithoutPassword });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Auth check failed", error: error.message });
+  }
+};
