@@ -7,8 +7,15 @@ import cookieParser from "cookie-parser";
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// Middleware to allow all origins
-app.use(cors());
+// CORS configuration
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Your frontend URL
+    credentials: true, // Allow credentials (cookies)
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+  })
+);
 
 // Middleware to parse cookies
 app.use(cookieParser());
