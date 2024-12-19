@@ -27,17 +27,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import ValidityDialog from "@/components/dialog/ValidityDialog";
+import RateDialog from "@/components/dialog/RateDialog";
 import Loading from "@/components/ui/loading";
 
-export default function AdminValidity() {
+export default function AdminRate() {
+  const [rates, setRates] = useState([]);
   const [validities, setValidities] = useState([]);
-  const [filteredValidities, setFilteredValidities] = useState([]);
+  const [filteredRates, setFilteredRates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [open, setOpen] = useState(false);
-  const [selectedValidity, setSelectedValidity] = useState(null);
+  const [selectedRate, setSelectedRate] = useState(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [validityToDelete, setValidityToDelete] = useState(null);
+  const [rateToDelete, setRateToDelete] = useState(null);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,22 +46,34 @@ export default function AdminValidity() {
 
   const fetchValidities = async () => {
     try {
-      setIsLoading(true);
       const response = await axios.get(
         "http://localhost:3000/api/admin/validities",
         { withCredentials: true }
       );
-      const validityData = Array.isArray(response.data.data)
-        ? response.data.data
-        : [];
-      setValidities(validityData);
-      setFilteredValidities(validityData);
+      setValidities(response.data.data);
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Failed to fetch validities"
       );
-      setValidities([]);
-      setFilteredValidities([]);
+    }
+  };
+
+  const fetchRates = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+        "http://localhost:3000/api/admin/rates",
+        { withCredentials: true }
+      );
+      const rateData = Array.isArray(response.data.data)
+        ? response.data.data
+        : [];
+      setRates(rateData);
+      setFilteredRates(rateData);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to fetch rates");
+      setRates([]);
+      setFilteredRates([]);
     } finally {
       setIsLoading(false);
     }
@@ -68,55 +81,68 @@ export default function AdminValidity() {
 
   useEffect(() => {
     fetchValidities();
+    fetchRates();
   }, []);
 
   // Pagination calculations
-  const totalPages = Math.ceil(filteredValidities.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredRates.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentValidities = filteredValidities.slice(startIndex, endIndex);
+  const currentRates = filteredRates.slice(startIndex, endIndex);
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(
-        `http://localhost:3000/api/admin/delete-validity/${id}`,
-        { withCredentials: true }
-      );
-      toast.success("Validity deleted successfully");
-      fetchValidities();
-      setCurrentPage(1); // Reset to first page after delete
+      await axios.delete(`http://localhost:3000/api/admin/delete-rate/${id}`, {
+        withCredentials: true,
+      });
+      toast.success("Rate deleted successfully");
+      fetchRates();
+      setCurrentPage(1);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to delete validity");
+      toast.error(error.response?.data?.message || "Failed to delete rate");
     }
+  };
+
+  const formatAmount = (amount) => {
+    return new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
+    }).format(amount);
   };
 
   const renderTableContent = () => {
     if (isLoading) {
       return (
         <TableRow>
-          <TableCell colSpan={2} className="text-center">
+          <TableCell colSpan={4} className="text-center">
             <Loading variant="spinner" size="sm" />
           </TableCell>
         </TableRow>
       );
     }
 
-    if (currentValidities.length === 0) {
+    if (currentRates.length === 0) {
       return (
         <TableRow>
           <TableCell
-            colSpan={2}
+            colSpan={4}
             className="text-center py-10 text-muted-foreground"
           >
-            No validities found
+            No rates found
           </TableCell>
         </TableRow>
       );
     }
 
-    return currentValidities.map((validity) => (
-      <TableRow key={validity._id}>
-        <TableCell className="text-center">{validity.validity}</TableCell>
+    return currentRates.map((rate) => (
+      <TableRow key={rate._id}>
+        <TableCell>{rate.name}</TableCell>
+        <TableCell className="text-right">
+          {formatAmount(rate.amount)}
+        </TableCell>
+        <TableCell className="text-center">
+          {rate.validity ? rate.validity.validity : "Invalid Validity"}
+        </TableCell>
         <TableCell className="text-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -127,22 +153,22 @@ export default function AdminValidity() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem
                 onClick={() => {
-                  setSelectedValidity(validity);
+                  setSelectedRate(rate);
                   setOpen(true);
                 }}
-                className="cursor-pointer"
+                className="flex items-center gap-2"
               >
-                <Pencil className="mr-2 h-4 w-4" />
+                <Pencil className="h-4 w-4" />
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
-                  setValidityToDelete(validity);
+                  setRateToDelete(rate);
                   setShowDeleteDialog(true);
                 }}
-                className="cursor-pointer text-red-600"
+                className="flex items-center gap-2 text-red-600"
               >
-                <Trash className="mr-2 h-4 w-4" />
+                <Trash className="h-4 w-4" />
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -155,16 +181,16 @@ export default function AdminValidity() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Validity Management</h2>
+        <h2 className="text-2xl font-bold">Rate Management</h2>
         <Button
           onClick={() => {
-            setSelectedValidity(null);
+            setSelectedRate(null);
             setOpen(true);
           }}
           className="flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
-          Add Validity
+          Add Rate
         </Button>
       </div>
 
@@ -172,8 +198,10 @@ export default function AdminValidity() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[80%] text-center">Validity</TableHead>
-              <TableHead className="w-[20%] text-center">Actions</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="text-center">Validity</TableHead>
+              <TableHead className="text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>{renderTableContent()}</TableBody>
@@ -181,12 +209,12 @@ export default function AdminValidity() {
       </div>
 
       {/* Pagination */}
-      {!isLoading && filteredValidities.length > 0 && (
+      {!isLoading && filteredRates.length > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             Showing {startIndex + 1} to{" "}
-            {Math.min(endIndex, filteredValidities.length)} of{" "}
-            {filteredValidities.length} entries
+            {Math.min(endIndex, filteredRates.length)} of {filteredRates.length}{" "}
+            entries
           </p>
           <div className="flex gap-2">
             <Button
@@ -221,11 +249,12 @@ export default function AdminValidity() {
         </div>
       )}
 
-      <ValidityDialog
+      <RateDialog
         open={open}
         setOpen={setOpen}
-        validity={selectedValidity}
-        onSuccess={fetchValidities}
+        rate={selectedRate}
+        validities={validities}
+        onSuccess={fetchRates}
       />
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -233,8 +262,11 @@ export default function AdminValidity() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this
-              validity period.
+              This action cannot be undone. This will permanently delete{" "}
+              <span className="font-medium text-foreground">
+                {rateToDelete?.name}
+              </span>
+              .
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -242,7 +274,7 @@ export default function AdminValidity() {
             <AlertDialogAction
               className="bg-red-600 hover:bg-red-700"
               onClick={() => {
-                handleDelete(validityToDelete?._id);
+                handleDelete(rateToDelete?._id);
                 setShowDeleteDialog(false);
               }}
             >

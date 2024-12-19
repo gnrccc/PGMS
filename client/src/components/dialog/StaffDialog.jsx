@@ -96,7 +96,7 @@ export default function StaffDialog({ open, setOpen, staff, onSuccess }) {
       if (staff) {
         await axios.put(
           `http://localhost:3000/api/user/update-profile/${staff._id}`,
-          data,
+          { ...data, role: "staff" },
           { withCredentials: true }
         );
         toast.success("Staff updated successfully");

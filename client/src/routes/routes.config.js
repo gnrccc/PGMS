@@ -6,6 +6,7 @@ import Login from "@/pages/auth/Login";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import AdminStaff from "@/pages/admin/Staff";
 import AdminValidity from "@/pages/admin/Validity";
+import AdminRate from "@/pages/admin/Rate";
 
 export const publicRoutes = [
   {
@@ -30,6 +31,12 @@ export const protectedRoutes = [
   {
     path: "/admin/validity",
     element: AdminValidity,
+    roles: ["admin"],
+    layout: DashboardLayout,
+  },
+  {
+    path: "/admin/rate",
+    element: AdminRate,
     roles: ["admin"],
     layout: DashboardLayout,
   },

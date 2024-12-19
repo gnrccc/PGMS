@@ -35,7 +35,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import StaffDialog from "@/components/staff/StaffDialog";
+import StaffDialog from "@/components/dialog/StaffDialog";
 import Loading from "@/components/ui/loading";
 
 export default function Staff() {
