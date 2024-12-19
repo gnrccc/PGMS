@@ -1,20 +1,20 @@
 export const isValidAge = (birthDate) => {
   const today = new Date();
-  const userBirthDate = new Date(birthDate);
+  const birth = new Date(birthDate);
 
-  // Calculate age considering year, month, and day
-  let age = today.getFullYear() - userBirthDate.getFullYear();
-  const monthDiff = today.getMonth() - userBirthDate.getMonth();
-  const dayDiff = today.getDate() - userBirthDate.getDate();
+  // Set both dates to start of day for accurate comparison
+  today.setHours(0, 0, 0, 0);
+  birth.setHours(0, 0, 0, 0);
+
+  // Calculate age
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
 
   // Adjust age if birthday hasn't occurred this year
-  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
 
-  if (age <= 18 || age >= 55) {
-    return true;
-  }
-
-  return false;
+  // Check if age is between 18 and 55
+  return age >= 18 && age <= 55;
 };
