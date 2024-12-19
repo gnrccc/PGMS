@@ -14,7 +14,7 @@ export const getAllStaff = async (req, res) => {
     if (!staff || staff.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No staff members found",
+        message: "No staff found",
       });
     }
 

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import Loading from "@/components/ui/loading";
 
 const AuthContext = createContext(null);
 
@@ -59,26 +60,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const createAdmin = async (credentials) => {
+  const createAdmin = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/create-admin",
-        credentials,
-        {
-          withCredentials: true,
-        }
+        "http://localhost:3000/api/auth/create-admin"
       );
 
       return response.data;
     } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to create admin account"
-      );
+      throw error;
     }
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loading variant="skeleton" size="lg" />;
   }
 
   return (

@@ -69,7 +69,7 @@ export const createAdmin = async (req, res) => {
     }
 
     // Generate secure admin password
-    const adminPassword = "Admin@" + Math.random().toString(36).slice(-8);
+    const adminPassword = "Admin@123";
 
     // Hash admin password
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
@@ -110,6 +110,7 @@ export const createAdmin = async (req, res) => {
       adminCredentials: {
         userName: admin.userName,
         password: adminPassword, // Send unhashed password in response
+        role: admin.role,
       },
     });
   } catch (error) {
@@ -172,5 +173,14 @@ export const check = async (req, res) => {
     res
       .status(500)
       .json({ message: "Auth check failed", error: error.message });
+  }
+};
+
+export const checkAdmin = async (req, res) => {
+  try {
+    const adminCount = await User.countDocuments({ role: "admin" });
+    res.json({ hasAdmin: adminCount > 0 });
+  } catch (error) {
+    res.status(500).json({ message: "Error checking admin status" });
   }
 };
